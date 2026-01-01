@@ -1,4 +1,4 @@
-from pyromod import listen
+
 import pyrogram.utils
 from threading import Thread
 import time, os
@@ -1118,3 +1118,4 @@ if __name__ == '__main__':
         logger.info("Menghentikan bot...")
     finally:
         logger.info("Bot telah dihentikan.")
+
