@@ -216,7 +216,7 @@ async def show_forward_settings(client, message, edit_msg=None):
 @app.on_message(filters.command("start"))
 async def cmd_start(client, message):
     await message.reply_text(
-        "Halo! Saya bot forwarder Xydevs-Helper. Powered by xydevs.com"
+        "Halo! Saya bot forwarder Xylence-Helper. Gunakan /forward dengan reply ke pesan yang ingin Anda copy dan forward."
     )
   
 async def fetch_forward_data():
@@ -335,7 +335,7 @@ async def show_forward_settings(client, message_or_query, edit_mode=False):
             await message_or_query.reply_text(text)
 
 
-@app.on_message(filters.command("forward"))
+@app.on_message(filters.command("forward-settings"))
 async def cmd_forward(client, message):
     # Check if user is whitelisted
     if not message.from_user or message.from_user.id not in WHITELIST_USER_IDS:
@@ -344,6 +344,53 @@ async def cmd_forward(client, message):
     # If it's a reply to message, could be implemented later for quick forward
     # For now, just show settings management
     await show_forward_settings(client, message)
+
+
+@app.on_message(filters.command("forward"))
+async def cmd_forward_command(client, message):
+    """Forward the replied-to message using configured forward settings.
+    If not used as a reply, fallback to showing the forward-settings UI."""
+    # Check if user is whitelisted
+    if not message.from_user or message.from_user.id not in WHITELIST_USER_IDS:
+        return await message.reply_text("Anda tidak memiliki akses ke command ini.")
+
+    # If not used as a reply, show current forward settings UI
+    if not getattr(message, "reply_to_message", None):
+        return await show_forward_settings(client, message)
+
+    source_msg = message.reply_to_message
+    source_msg_id = get_msg_id(source_msg)
+
+    data = await fetch_forward_data()
+    if not data or not data.get("data"):
+        return await message.reply_text("Tidak ada data tujuan yang ditemukan.")
+
+    rows = []
+    items = data.get("data") or []
+    for item in items:
+        context = item.get("context") or "(no title)"
+        value = str(item.get("value", ""))
+        msg_field = str(item.get("msg", ""))
+
+        parsed = parse_value(value, fallback_msg=msg_field or None)
+        chat = parsed.get("chat")
+        msg = parsed.get("msg") or msg_field or "0"
+        thread_id = parsed.get("thread_id") or 0
+
+        if not chat:
+            continue
+
+        chat_safe = str(chat).replace("_", "-")
+        cb = f"admin_execute_forward2_{chat_safe}_{msg}_{source_msg_id}_{thread_id}"
+        rows.append([InlineKeyboardButton(text=f"{context}", callback_data=cb)])
+
+    rows.append([InlineKeyboardButton("Cancel", callback_data="admin_cancel")])
+    markup = InlineKeyboardMarkup(rows)
+
+    # Send selection as reply to the source message so callback_query.message refers to it
+    selection_msg = await source_msg.reply_text("Pilih topik tujuan untuk Forward:", reply_markup=markup)
+    # No need to store selection_msg in albums for single-message forwarding
+    return
 
 
 @app.on_callback_query(filters.regex(r"^admin_forward_settings_refresh$"))
@@ -1118,5 +1165,3 @@ if __name__ == '__main__':
         logger.info("Menghentikan bot...")
     finally:
         logger.info("Bot telah dihentikan.")
-
-
