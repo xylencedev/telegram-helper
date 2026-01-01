@@ -1,15 +1,4 @@
-import pyrogram.utils
 
-def fixed_get_peer_type(peer_id: int) -> str:
-    peer_id_str = str(peer_id)
-    if not peer_id_str.startswith("-"):
-        return "user"
-    elif peer_id_str.startswith("-100"):
-        return "channel"
-    else:
-        return "chat"
-
-pyrogram.utils.get_peer_type = fixed_get_peer_type
 
 import logging
 import asyncio
@@ -1061,4 +1050,5 @@ async def on_cancel(client, callback_query):
 if __name__ == "__main__":
     print("Starting Xylence-Helper bot...")
     app.run()
+
 
