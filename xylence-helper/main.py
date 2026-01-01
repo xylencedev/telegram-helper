@@ -1,14 +1,3 @@
-
-
-import logging
-import asyncio
-from functools import partial
-import re
-from urllib.parse import urlparse
-from collections import defaultdict
-import json
-
-import requests
 import pyrogram.utils
 
 def fixed_get_peer_type(peer_id: int) -> str:
@@ -19,12 +8,22 @@ def fixed_get_peer_type(peer_id: int) -> str:
         return "channel"
     else:
         return "chat"
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo
-
-
 
 pyrogram.utils.get_peer_type = fixed_get_peer_type
+
+import logging
+import asyncio
+from functools import partial
+import re
+from urllib.parse import urlparse
+from collections import defaultdict
+import json
+
+import requests
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo
+from pyromod import listen
+
 
 
 API_ID = 21001953
@@ -1062,6 +1061,4 @@ async def on_cancel(client, callback_query):
 if __name__ == "__main__":
     print("Starting Xylence-Helper bot...")
     app.run()
-
-
 
