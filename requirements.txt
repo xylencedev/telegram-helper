@@ -11,4 +11,6 @@ requests==2.32.5
 TgCrypto==1.2.5
 urllib3==2.6.2
 fastapi==0.95.2
+flask
 uvicorn[standard]==0.22.0
+
