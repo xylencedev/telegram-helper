@@ -1,4 +1,16 @@
+from pyromod import listen
+import pyrogram.utils
 
+def fixed_get_peer_type(peer_id: int) -> str:
+    peer_id_str = str(peer_id)
+    if not peer_id_str.startswith("-"):
+        return "user"
+    elif peer_id_str.startswith("-100"):
+        return "channel"
+    else:
+        return "chat"
+
+pyrogram.utils.get_peer_type = fixed_get_peer_type
 
 import logging
 import asyncio
@@ -7,7 +19,7 @@ import re
 from urllib.parse import urlparse
 from collections import defaultdict
 import json
-from pyromod import listen
+
 import requests
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo
@@ -1049,7 +1061,5 @@ async def on_cancel(client, callback_query):
 
 if __name__ == "__main__":
     print("Starting Xylence-Helper bot...")
-    app.run()
-
-
+    asyncio.run(app.start())
 
