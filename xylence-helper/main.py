@@ -1,6 +1,7 @@
 from pyromod import listen
 import pyrogram.utils
-
+from threading import Thread
+import time, os
 def fixed_get_peer_type(peer_id: int) -> str:
     peer_id_str = str(peer_id)
     if not peer_id_str.startswith("-"):
@@ -19,9 +20,9 @@ import re
 from urllib.parse import urlparse
 from collections import defaultdict
 import json
-
+from flask import Flask, request, jsonify
 import requests
-from pyrogram import Client, filters
+from pyrogram import Client, filters, types, idle
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo
 
 
@@ -48,6 +49,7 @@ user_media_collection = defaultdict(list)
 
 user_processing_tasks = {}
 
+flask_app = Flask(__name__)
 app = Client(
     "xylence_helper",
     api_id=API_ID,
@@ -1059,7 +1061,60 @@ async def on_cancel(client, callback_query):
     await callback_query.answer("Dibatalkan")
     await callback_query.message.edit_text("Dibatalkan oleh pengguna.")
 
-if __name__ == "__main__":
-    print("Starting Xylence-Helper bot...")
-    app.run()
+@flask_app.route('/healthz', methods=['GET'])
+def health_check():
+    return "OK", 200
 
+def run_flask():
+    global flask_thread_running
+    flask_thread_running = True
+    port = int(os.environ.get('PORT', 3251)) 
+    flask_app.run(host="0.0.0.0", port=port)
+    while flask_thread_running:
+        time.sleep(3) 
+    logger.info("Flask thread stopped gracefully.")
+
+async def run_pyrogram_async():
+    try:
+        await app.start()
+        logger.info("Bot berjalan...")
+        bot_info = await app.get_me()
+        logger.info(f"""
+        =================
+        Bot Information:
+        Username: @{bot_info.username}
+        Name: {bot_info.first_name}
+        Bot ID: {bot_info.id}
+        =================
+        """)
+        logger.info("Bot has started successfully!")
+        
+        await idle()
+        
+    except Exception as e:
+        logger.error(f"Error occurred while running Pyrogram: {e}")
+    finally:
+        await app.stop()
+        logger.info("Bot telah berhenti.")
+
+
+if __name__ == '__main__':
+    try:
+
+        logger.info("Starting Flask server...")
+        flask_thread = Thread(target=run_flask)
+        flask_thread.daemon = True
+        flask_thread.start()
+        
+        loop = asyncio.get_event_loop()
+
+        async_tasks = [run_pyrogram_async()]
+
+        loop.run_until_complete(
+            asyncio.gather(*async_tasks)
+        )
+        
+    except KeyboardInterrupt:
+        logger.info("Menghentikan bot...")
+    finally:
+        logger.info("Bot telah dihentikan.")
