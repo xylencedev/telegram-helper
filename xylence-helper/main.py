@@ -12,7 +12,7 @@ def fixed_get_peer_type(peer_id: int) -> str:
         return "chat"
 
 pyrogram.utils.get_peer_type = fixed_get_peer_type
-from pyromod import listen
+
 import logging
 import asyncio
 from functools import partial
@@ -1660,3 +1660,4 @@ if __name__ == '__main__':
         logger.info("Menghentikan bot...")
     finally:
         logger.info("Bot telah dihentikan.")
+
