@@ -216,7 +216,7 @@ async def show_forward_settings(client, message, edit_msg=None):
 @app.on_message(filters.command("start"))
 async def cmd_start(client, message):
     await message.reply_text(
-        "Halo! Saya bot forwarder Xylence-Helper. Gunakan /forward dengan reply ke pesan yang ingin Anda copy dan forward."
+        "Halo! Saya bot forwarder Xydevs-Helper. Powered by xydevs.com"
     )
   
 async def fetch_forward_data():
@@ -1118,4 +1118,5 @@ if __name__ == '__main__':
         logger.info("Menghentikan bot...")
     finally:
         logger.info("Bot telah dihentikan.")
+
 
